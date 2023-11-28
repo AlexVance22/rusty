@@ -1,0 +1,6 @@
+bin/
+obj/
+src/test.cpp
+compile_flags.txt
+librusty-test.exe
+
