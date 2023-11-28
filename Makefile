@@ -6,10 +6,9 @@ LD = ar rcs
 SDIR = src
 ODIR = obj
 
-DEFINES =
 INCDIRS = -I$(SDIR) -Iinclude/rusty
 
-CFLAGS = $(STD) -Wall $(INCDIRS) $(DEFINES)
+CFLAGS = $(STD) -Wall $(INCDIRS)
 LFLAGS = $(STD) -Wall
 
 DEPS = $(wildcard $(SDIR)/*.h)
@@ -41,17 +40,17 @@ $(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
 
 clean:
 	rm -f $(OBJS)
-	rm -f $(BIN)
-	rm -f $(BIN)-r
+	rm -f bin/$(BIN).a
+	rm -f bin/$(BIN)-r.a
 	rm -f $(BIN)-test
 
 
 .PHONY: release
 
 release: clean
-release: CFLAGS = $(STD) -Wall -O3 $(INCDIRS) $(DEFINES) -DNDEBUG
+release: CFLAGS = $(STD) -Wall -O3 $(INCDIRS) -DNDEBUG
 release: LFLAGS = $(STD) -Wall -O3
-release: $(BIN)-r
+release: bin/$(BIN)-r.a
 
 
 .PHONY: test
@@ -59,11 +58,4 @@ release: $(BIN)-r
 test: clean
 test: CFLAGS = $(STD) -Wall $(INCDIRS) -DTESTING
 test: $(BIN)-test
-
-
-.PHONY: all
-
-all: $(BIN)
-all: $(BIN)-r
-all: $(BIN)-test
 
