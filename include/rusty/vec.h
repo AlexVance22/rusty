@@ -1,17 +1,20 @@
 #pragma once
 #include "core.h"
 #include "option.h"
+#include "fmt.h"
 
 
-namespace rstd { namespace vec {
+namespace rstd {
+
+namespace vec {
 
 template<typename T>
 class Vec
 {
 private:
     T* m_data = nullptr;
-    usize m_cap = 0;
-    usize m_size = 0;
+    size_t m_cap = 0;
+    size_t m_size = 0;
 
 private:
     Vec(const Vec& other): m_data(new T[other.m_cap]), m_cap(other.m_cap), m_size(other.m_size) {
@@ -58,11 +61,11 @@ public:
     // typename std::vector<T>::const_iterator cend() const { return impl.cend(); }
 
     void reserve(usize cap) {
-        T* temp = new T[cap];
+        T* temp = new T[(size_t)cap];
         memcpy(temp, m_data, m_size * sizeof(T));
         delete[] m_data;
         m_data = temp;
-        m_cap = cap;
+        m_cap = (size_t)cap;
     }
     void push(T&& val) {
         m_data[m_size] = std::move(val);
@@ -78,7 +81,7 @@ public:
         }
     }
     void insert(usize index, T&& val) {
-        for (usize i = m_size; i > index; i--) {
+        for (size_t i = m_size; i > (size_t)index; i--) {
             m_data[i] = m_data[i - 1];
         }
         m_data[index] = std::move(val);
@@ -90,8 +93,8 @@ public:
         if (is_empty()) {
             return option::Option<T>::None();
         } else {
-            T temp = std::move((*this)[index]);
-            for (usize i = index; i < m_size; i++) {
+            T temp = std::move((*this)[(size_t)index]);
+            for (size_t i = (size_t)index; i < m_size; i++) {
                 m_data[i] = m_data[i + 1];
             }
             m_size--;
@@ -140,5 +143,23 @@ public:
     // void sort_by(bool(*func)(const T&, const T&)) { std::sort(impl.begin(), impl.end(), func); }
 };
 
-} }
+}
+
+namespace fmt {
+
+template<typename T>
+struct Debug<vec::Vec<T>> {
+    static void debug(const vec::Vec<T>& self, std::ostream& fmt) {
+        fmt << "[ ";
+        for (usize i = 0; i < self.len(); i++) {
+            if (i != (usize)0) { fmt << ", "; }
+            Debug<T>::debug(self[i], fmt);
+        }
+        fmt << " ]";
+    }
+};
+
+}
+
+}
 

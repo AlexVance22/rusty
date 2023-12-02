@@ -1,4 +1,5 @@
 #include "io.h"
+#include "stralloc.h"
 
 
 namespace rstd { namespace io {

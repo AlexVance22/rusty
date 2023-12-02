@@ -19,15 +19,15 @@ private:
     enum { VOk, VErr, } tag;
     std::variant<T, E> data;
 
-    Result(T val):       tag(Result::VOk),  data(val) {}
-    Result(E err, Unit): tag(Result::VErr), data(err) {}
+    Result(T&& val):       tag(Result::VOk),  data(std::move(val)) {}
+    Result(E&& err, Unit): tag(Result::VErr), data(std::move(err)) {}
 
 public:
     using Ok_t = T;
     using Err_t = E;
 
-    static Result Ok(T val) { return Result(val); }
-    static Result Err(E err) { return Result(err, {}); }
+    static Result Ok(T&& val) { return Result(std::move(val)); }
+    static Result Err(E&& err) { return Result(std::move(err), {}); }
 
     bool is_ok()  const { return tag == Result::VOk; }
     bool is_err() const { return tag == Result::VErr; }

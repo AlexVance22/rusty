@@ -56,7 +56,5 @@ public:
     const T* operator->() const { return m_data; }
 };
 
-}
-
-}
+} }
 

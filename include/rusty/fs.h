@@ -1,9 +1,13 @@
 #pragma once
+//#include "stralloc.h"
 #include "result.h"
-#include "str.h"
 
 
-namespace rstd { namespace fs {
+namespace rstd {
+
+namespace string { class String; }
+
+namespace fs {
 
 struct Error {
     enum Kind { FileNotFound } kind;

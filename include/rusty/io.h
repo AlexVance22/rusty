@@ -1,10 +1,13 @@
 #pragma once
 #include "core.h"
 #include "result.h"
-#include "str.h"
 
 
-namespace rstd{ namespace io {
+namespace rstd{
+
+namespace string { class String; }
+
+namespace io {
 
 struct Error {
     enum Kind { PlaceHolder } kind;
@@ -19,10 +22,6 @@ struct Error {
 
 template<typename T>
 using Result = result::Result<T, Error>;
-
-
-struct Stdin;
-
 
 struct Stdin {
     [[nodiscard]] Result<Unit> read_line(string::String& buffer);
