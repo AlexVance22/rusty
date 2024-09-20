@@ -2,10 +2,11 @@
 #include <iostream>
 #include <cstdint>
 #include <cmath>
-#include "fmt.h"
+#include "fmt_fwd.h"
+#include "ops.h"
 
-#define C_EXPR static constexpr inline
-#define STATIC static const inline
+#define C_EXPR inline static constexpr
+#define STATIC inline static const
 
 template<typename T> struct IntTraits { };
 template<> struct IntTraits<int8_t>   { using signed_t = int8_t;  C_EXPR uint8_t bits = 8;  C_EXPR int64_t min = -0x7F;                 C_EXPR size_t max = 0x7F; };
@@ -29,7 +30,7 @@ using u8    = Int<uint8_t>;
 using u16   = Int<uint16_t>;
 using u32   = Int<uint32_t>;
 using u64   = Int<uint64_t>;
-using usize = Int<uint64_t>;
+using usize = Int<size_t>;
 
 
 template<typename T>
@@ -151,23 +152,34 @@ template<typename T> constexpr bool operator<=(const Int<T>& left, const Int<T>&
 template<typename T> constexpr bool operator>=(const Int<T>& left, const Int<T>& right) { return left.m_val >= right.m_val; }
 
 template<typename T> std::istream& operator>>(std::istream& stream, Int<T> val) { return stream >> val.m_val; }
-impl_Debug_for(i8,  { fmt << (int8_t) self; })
-impl_Debug_for(i16, { fmt << (int16_t)self; })
-impl_Debug_for(i32, { fmt << (int32_t)self; })
-impl_Debug_for(i64, { fmt << (int64_t)self; })
-impl_Debug_for(u8,  { fmt << (int8_t) self; })
-impl_Debug_for(u16, { fmt << (int16_t)self; })
-impl_Debug_for(u32, { fmt << (int32_t)self; })
-impl_Debug_for(u64, { fmt << (int64_t)self; })
+decl_Debug_for(i8)
+decl_Debug_for(i16)
+decl_Debug_for(i32)
+decl_Debug_for(i64)
+decl_Debug_for(u8)
+decl_Debug_for(u16)
+decl_Debug_for(u32)
+decl_Debug_for(u64)
+
+decl_ToString_for( i8)
+decl_ToString_for( i16)
+decl_ToString_for( i32)
+decl_ToString_for( i64)
+decl_ToString_for( u8)
+decl_ToString_for( u16)
+decl_ToString_for( u32)
+decl_ToString_for( u64)
 
 i8  operator ""_i8 (unsigned long long int);
 i16 operator ""_i16(unsigned long long int);
 i32 operator ""_i32(unsigned long long int);
 i64 operator ""_i64(unsigned long long int);
+isize operator ""_isize(unsigned long long int);
 u8  operator ""_u8 (unsigned long long int);
 u16 operator ""_u16(unsigned long long int);
 u32 operator ""_u32(unsigned long long int);
 u64 operator ""_u64(unsigned long long int);
+usize operator ""_usize(unsigned long long int);
 
 
 #undef INFINITY
@@ -227,7 +239,7 @@ class Float
 public:
     C_EXPR uint32_t DIGITS             = FloatTraits<T>::DIGITS;
     C_EXPR T        EPSILON            = FloatTraits<T>::EPSILON;
-    inline const static T INFINITY     = FloatTraits<T>::INFINITY;
+    STATIC T INFINITY     = FloatTraits<T>::INFINITY;
     C_EXPR uint32_t MANTISSA_DIGITS    = FloatTraits<T>::MANTISSA_DIGITS;
     C_EXPR T        MAX                = FloatTraits<T>::MAX;
     C_EXPR int32_t  MAX_10_EXP         = FloatTraits<T>::MAX_10_EXP;
@@ -236,8 +248,8 @@ public:
     C_EXPR int32_t  MIN_10_EXP         = FloatTraits<T>::MIN_10_EXP;
     C_EXPR int32_t  MIN_EXP            = FloatTraits<T>::MIN_EXP;
     C_EXPR T        MIN_POSITIVE       = FloatTraits<T>::MIN_POSITIVE;
-    inline const static T NAN          = FloatTraits<T>::NAN;
-    inline const static T NEG_INFINITY = FloatTraits<T>::NEG_INFINITY;
+    STATIC T NAN          = FloatTraits<T>::NAN;
+    STATIC T NEG_INFINITY = FloatTraits<T>::NEG_INFINITY;
     C_EXPR uint32_t RADIX              = FloatTraits<T>::RADIX;
     using inner_t = T;
 
@@ -311,7 +323,6 @@ public:
     template<typename U> friend constexpr bool operator>=(const Float<U>& left, const Float<U>& right);
 
     template<typename U> friend std::istream& operator>>(std::istream& stream, Float<U> val);
-    template<typename U> friend std::ostream& operator<<(std::ostream& stream, Float<U> val);
 };
 
 
@@ -329,8 +340,12 @@ template<typename T> constexpr bool operator<=(const Float<T>& left, const Float
 template<typename T> constexpr bool operator>=(const Float<T>& left, const Float<T>& right) { return left.m_val >= right.m_val; }
 
 template<typename T> std::istream& operator>>(std::istream& stream, Float<T> val) { return stream >> val.m_val; }
-template<typename T> std::ostream& operator<<(std::ostream& stream, Float<T> val) { return stream << val.m_val; }
+decl_Debug_for(f32)
+decl_Debug_for(f64)
 
-impl_Debug_for(f32, { fmt << (flt32_t)self; })
-impl_Debug_for(f64, { fmt << (flt64_t)self; })
+decl_ToString_for( f32)
+decl_ToString_for( f64)
+
+f32 operator ""_f32(long double);
+f64 operator ""_f64(long double);
 

@@ -1,5 +1,5 @@
 BIN = librusty
-STD = -std=c++17
+STD = -std=c++20
 CC = g++
 LD = ar rcs
 
@@ -55,7 +55,6 @@ release: bin/$(BIN)-r.a
 
 .PHONY: test
 
-test: clean
 test: CFLAGS = $(STD) -Wall $(INCDIRS) -DTESTING
 test: $(BIN)-test
 

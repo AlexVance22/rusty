@@ -64,9 +64,9 @@ Option<char> String::pop() {
     if (is_empty()) {
         return Option<char>::None();
     } else {
-        const char temp = m_data[--m_size];
+        char temp = m_data[--m_size];
         m_data[m_size] = 0;
-        return Option<char>::Some(temp);
+        return Option<char>::Some(std::move(temp));
     }
 }
 
@@ -81,16 +81,31 @@ void String::insert(usize index, char val) {
     }
 }
 
+void String::push_str(const str val) {
+    reserve(len() + val.len());
+    for (usize i = 0; i < val.len(); i++) {
+        push(val.data()[i]);
+    }
+}
+
+void String::push_str(const char* val) {
+    auto l = strlen(val);
+    reserve(len() + l);
+    for (usize i = 0; i < l; i++) {
+        push(val[i]);
+    }
+}
+
 Option<char> String::remove(usize index) {
     if (is_empty()) {
         return Option<char>::None();
     } else {
-        const char temp = m_data[(size_t)index];
+        char temp = m_data[(size_t)index];
         for (size_t i = (size_t)index; i < --m_size; i++) {
             m_data[i] = m_data[i + 1];
         }
         m_data[m_size] = 0;
-        return Option<char>::Some(temp);
+        return Option<char>::Some(std::move(temp));
     }
 }
 
@@ -101,4 +116,87 @@ void String::clear() {
     m_size = 0;
 }
 
+
+Option<char> String::nth(usize n) const {
+    if (n < m_size) {
+        return Option<char>::Some(std::move(m_data[n]));
+    } else {
+        return Option<char>::None();
+    }
+}
+
+
+Option<usize> String::find(const str pat) const {
+    for (usize i = 0; i < (len() - pat.len() + 1); i++) {
+        if (str{ data() + i, pat.len() } == pat) {
+            return Option<usize>::Some(std::move(i));
+        }
+    }
+
+    return Option<usize>::None();
+}
+
+String String::replace(const str pat, const str to) const {
+    String res = clone();
+
+    while (const auto idx = res.find(pat).if_let()) {
+        auto temp = String::with_capacity(len() - pat.len() + to.len());
+        for (usize i = 0; i < *idx; i++) {
+            temp.push(res.data()[i]);
+        }
+        for (usize i = 0; i < to.len(); i++) {
+            temp.push(to.data()[i]);
+        }
+        for (usize i = 0; i < (res.len() - pat.len() - *idx); i++) {
+            temp.push(res.data()[*idx + pat.len() + i]);
+        }
+        res = temp.move();
+    }
+
+    return res;
+}
+
+String String::replacen(const str pat, const str to, usize n) const {
+    auto res = clone();
+    auto m = 0_usize;
+
+    while (const auto idx = res.find(pat).if_let()) {
+        if (m == n) {
+            break;
+        }
+        m++;
+
+        auto temp = String::with_capacity(len() - pat.len() + to.len());
+        for (usize i = 0; i < *idx; i++) {
+            temp.push(res.data()[i]);
+        }
+        for (usize i = 0; i < to.len(); i++) {
+            temp.push(to.data()[i]);
+        }
+        for (usize i = 0; i < (res.len() - pat.len() - *idx); i++) {
+            temp.push(res.data()[*idx + pat.len() + i]);
+        }
+        res = temp.move();
+    }
+
+    return res;
+}
+
+
+
 } }
+
+impl_PartialEq_for(rstd::string::String, {
+    if (self.len() != rhs.len()) {
+        return false;
+    }
+    for (usize i = 0; i < self.len(); i++) {
+        if (self.nth(i) != rhs.nth(i)) {
+            return false;
+        }
+    }
+    return true;
+})
+impl_Debug_for(    rstd::string::String, { f.write(self.data(), self.len()); })
+impl_ToString_for( rstd::string::String, { return self.clone(); })
+

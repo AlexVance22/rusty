@@ -1,6 +1,7 @@
 #pragma once
-#include "core.h"
 #include <variant>
+#include "base.h"
+#include "cmp_fwd.h"
 
 
 namespace rstd {
@@ -21,14 +22,14 @@ private:
     enum { VSome, VNone, } tag;
     std::variant<T, Unit> data;
 
-    Option(T val): tag(Option::VSome), data(val) {}
-    Option():      tag(Option::VNone), data(Unit{})  {}
+    Option(T&& val): tag(Option::VSome), data(std::move(val)) {}
+    Option():        tag(Option::VNone), data(Unit{})  {}
 
 public:
     using Some_t = T;
 
-    static Option Some(T val) { return Option(val); }
-    static Option None() { return Option(); }
+    static Option Some(T&& val) { return Option(std::move(val)); }
+    static Option None()        { return Option(); }
 
     bool is_some() const { return tag == Option::VSome; }
     bool is_none() const { return tag == Option::VNone; }
@@ -55,4 +56,17 @@ public:
 }
 
 }
+
+template<typename T>
+impl_PartialEq_for_gen(rstd::option::Option<T>, {
+    if (self.is_none() && rhs.is_none()) {
+        return true;
+    }
+    if (auto l = self.if_let()) {
+        if (auto r = rhs.if_let()) {
+            return (*l == *r);
+        }
+    }
+    return false;
+});
 

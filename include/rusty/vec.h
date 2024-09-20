@@ -1,12 +1,13 @@
 #pragma once
-#include "core.h"
+#include <initializer_list>
+#include <vector>
+
+#include "base.h"
 #include "option.h"
-#include "fmt.h"
+#include "ops.h"
 
 
-namespace rstd {
-
-namespace vec {
+namespace rstd { namespace vec {
 
 template<typename T>
 class Vec
@@ -18,13 +19,17 @@ private:
 
 private:
     Vec(const Vec& other): m_data(new T[other.m_cap]), m_cap(other.m_cap), m_size(other.m_size) {
-        memcpy(m_data, other.m_data, m_cap * sizeof(T));
+        for (size_t i = 0; i < m_size; i++) {
+            m_data[i] = std::move(other.m_data[i]);
+        }
     }
     Vec& operator=(const Vec& other) {
         m_data = new T[other.m_cap];
         m_cap = other.m_cap;
         m_size = other.m_size;
-        memcpy(m_data, other.m_data, m_cap * sizeof(T));
+        for (size_t i = 0; i < m_size; i++) {
+            m_data[i] = std::move(other.m_data[i]);
+        }
         return *this;
     }
 
@@ -32,6 +37,12 @@ public:
     Vec(): m_data(new T[4]), m_cap(4), m_size(0) {}
     Vec(Vec&& other): m_data(other.m_data), m_cap(other.m_cap), m_size(other.m_size) {
         other.m_data = nullptr;
+    }
+    Vec(std::vector<T>&& other): m_cap(0), m_size(0) {
+        reserve(other.size());
+        for (auto& e : other) {
+            push(std::move(e));
+        }
     }
     ~Vec() {
         delete[] m_data;
@@ -62,7 +73,9 @@ public:
 
     void reserve(usize cap) {
         T* temp = new T[(size_t)cap];
-        memcpy(temp, m_data, m_size * sizeof(T));
+        for (size_t i = 0; i < m_size; i++) {
+            temp[i] = std::move(m_data[i]);
+        }
         delete[] m_data;
         m_data = temp;
         m_cap = (size_t)cap;
@@ -82,7 +95,7 @@ public:
     }
     void insert(usize index, T&& val) {
         for (size_t i = m_size; i > (size_t)index; i--) {
-            m_data[i] = m_data[i - 1];
+            m_data[i] = std::move(m_data[i - 1]);
         }
         m_data[index] = std::move(val);
         if (++m_size == m_cap) {
@@ -90,12 +103,12 @@ public:
         }
     }
     option::Option<T> remove(usize index) {
-        if (is_empty()) {
+        if (is_empty() || index >= len()) {
             return option::Option<T>::None();
         } else {
             T temp = std::move((*this)[(size_t)index]);
             for (size_t i = (size_t)index; i < m_size; i++) {
-                m_data[i] = m_data[i + 1];
+                m_data[i] = std::move(m_data[i + 1]);
             }
             m_size--;
             return option::Option<T>::Some(std::move(temp));
@@ -143,23 +156,15 @@ public:
     // void sort_by(bool(*func)(const T&, const T&)) { std::sort(impl.begin(), impl.end(), func); }
 };
 
-}
-
-namespace fmt {
+} }
 
 template<typename T>
-struct Debug<vec::Vec<T>> {
-    static void debug(const vec::Vec<T>& self, std::ostream& fmt) {
-        fmt << "[ ";
-        for (usize i = 0; i < self.len(); i++) {
-            if (i != (usize)0) { fmt << ", "; }
-            Debug<T>::debug(self[i], fmt);
-        }
-        fmt << " ]";
+impl_Debug_for_gen(rstd::vec::Vec<T>, {
+    f << "[ ";
+    for (usize i = 0; i < self.len(); i++) {
+        if (i != 0) { f << ", "; }
+        f << self[i];
     }
-};
-
-}
-
-}
+    f << " ]";
+});
 

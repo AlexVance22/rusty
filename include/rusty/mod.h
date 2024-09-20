@@ -1,5 +1,6 @@
 #pragma once
-#include "core.h"
+#include "base.h"
+#include "ops.h"
 #include "mem.h"
 #include "box.h"
 #include "option.h"
@@ -16,11 +17,11 @@ using rstd::boxed::Box;
 // using rstd::clone::Clone;
 using rstd::cmp::PartialEq; // PartialOrd, Eq, Ord};
 // using rstd::convert::{AsRef, AsMut, Into, From};
-using rstd::def::Default;
+// using rstd::def::Default;
 // using rstd::iter::{Iterator, Extend, IntoIterator, DoubleEndedIterator, ExactSizeIterator};
 using rstd::option::Option; // {self, Some, None};
 using rstd::result::Result; // {self, Ok, Err};
-using rstd::string::String; // , ToString};
+using rstd::string::String; using rstd::string::ToString;
 using rstd::vec::Vec;
 // using rstd::convert::{TryFrom, TryInto};
 // using rstd::iter::FromIterator;

@@ -1,7 +1,10 @@
 #pragma once
-#include "core.h"
 #include <variant>
+#include "base.h"
+#include "cmp_fwd.h"
 
+
+namespace rstd {
 
 namespace option {
 
@@ -52,4 +55,21 @@ public:
 };
 
 }
+
+}
+
+template<typename T, typename E>
+struct rstd::cmp::PartialEq<rstd::result::Result<T, E>> {
+    static bool partial_eq(const rstd::result::Result<T, E>& self, const rstd::result::Result<T, E>& rhs) {
+        if (self.is_err() && rhs.is_err()) {
+            return true;
+        }
+        if (auto l = self.if_let()) {
+            if (auto r = rhs.if_let()) {
+                return (*l == *r);
+            }
+        }
+        return false;
+    }
+};
 

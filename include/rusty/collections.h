@@ -2,10 +2,10 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <memory>
-#include "core.h"
+#include "mod.h"
 
 
-namespace core {
+namespace rstd {
 
 template<typename T>
 using Arc = std::shared_ptr<T>;
@@ -23,6 +23,8 @@ private:
 public:
     HashMap(): impl(std::unordered_map<K, V>()) {}
     static HashMap make() { return { std::unordered_map<K, V>() }; }
+    HashMap&& move() { return std::move(*this); }
+    HashMap clone() const { return HashMap(*this); }
 
     typename std::unordered_map<K, V>::iterator begin() { return impl.begin(); }
     typename std::unordered_map<K, V>::const_iterator begin() const { return impl.cbegin(); }
