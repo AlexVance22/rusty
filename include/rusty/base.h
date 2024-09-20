@@ -1,5 +1,4 @@
 #pragma once
-#include <cstdlib>
 #include <cstdio>
 
 #include "num.h"
@@ -16,7 +15,7 @@ struct Unit {};
     #define let const auto
     #define let_mut auto
     #define fn auto
-    #define in :
+    // #define in :
     #define impl template<> struct
     // #define self this
 #endif
