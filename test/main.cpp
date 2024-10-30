@@ -18,10 +18,11 @@ String format(const str fmt, Args&& ... args) {
 
 struct Foo {
     i32 x;
-};
 
-impl_Debug_all(    Foo, { f << "Foo { " << self.x << " }"; })
-impl_PartialEq_all(Foo, { return self.x == rhs.x; })
+    auto operator==(const Foo& rhs) const { return x == rhs.x; }
+    auto operator<=>(const Foo& rhs) const { return x <=> rhs.x; }
+};
+std::ostream& operator<<(std::ostream& f, const Foo& val) { return f << "Foo { " << val.x << " }"; }
 
 
 fn main() -> int {

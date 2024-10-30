@@ -11,23 +11,21 @@ private:
     T* m_data;
 
 private:
-    Box(): m_data(nullptr) {}
-    Box(const Box& other): m_data(new T()) {
-        *m_data = *other.m_data;
-    }
+    Box(const Box& other): m_data(new T(*other.m_data)) {}
     Box& operator=(const Box& other) {
-        m_data = new T();
-        *m_data = *other.m_data;
+        ~Box();
+        m_data = new T(*other.m_data);
         return *this;
     }
 
 public:
+    Box() = delete;
     Box(Box&& other): m_data(other.m_data) {
-        other.m_data = nullptr;
+        if (m_data != other.m_data) {
+            other.m_data = nullptr;
+        }
     }
-    ~Box() {
-        delete m_data;
-    }
+    ~Box() { delete m_data; }
 
     Box& operator=(Box&& other) {
         m_data = other.m_data;
@@ -36,10 +34,7 @@ public:
     }
 
     static Box make(T&& val) {
-        auto res = Box();
-        res.m_data = new T();
-        *res.m_data = std::move(val);
-        return res;
+        return Box{ new T(std::move(val)) };
     }
     static T* leak(Box&& val) {
         auto temp = val.m_data;

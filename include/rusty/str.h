@@ -1,8 +1,5 @@
 #pragma once
 #include "num.h"
-#include "cmp_fwd.h"
-#include "fmt_fwd.h"
-#include "ops.h"
 
 
 namespace rstd {
@@ -32,11 +29,12 @@ public:
     rstd::option::Option<usize> find(const str pat) const;
     rstd::string::String replace(const str pat, const str to) const;
     rstd::string::String replacen(const str pat, const str to, usize n) const;
+
+    bool operator==(const str& rhs) const;
+    bool operator!=(const str& rhs) const;
 };
 
 #define STR(val) str{ val, sizeof(val) - 1 }
 
-decl_Debug_for(    str)
-decl_ToString_for( str)
-decl_PartialEq_for(str)
+std::ostream& operator<<(std::ostream& stream, const str& val);
 

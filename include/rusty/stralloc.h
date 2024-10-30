@@ -2,6 +2,7 @@
 #include "option.h"
 #include "str.h"
 #include <format>
+#include <sstream>
 
 
 namespace rstd { namespace string {
@@ -29,6 +30,7 @@ public:
     static String repeat(char c, usize n) { auto self = with_capacity(n); for (size_t i = 0; i < n; i++) self.push(c); return self; }
     static String from(str val) { auto self = with_capacity(val.len()); for (usize i = 0; i < val.len(); i++) self.push(val.nth(i)); return self; }
     static String from(const std::string& val) { auto self = with_capacity(val.size()); for (usize i = 0; i < val.size(); i++) self.push(val[i]); return self; }
+
     String&& move() { return std::move(*this); }
     String clone() const { return String(*this); }
 
@@ -66,35 +68,20 @@ public:
     // void sort() { std::sort(begin(), end()); }
     // void sort_by(bool(*func)(const char, const char)) { std::sort(begin(), end(), func); }
     // void sort_by(bool(*func)(const char&, const char&)) { std::sort(begin(), end(), func); }
-    //
+
     str operator*() { return as_str(); }
     const str operator*() const { return as_str(); }
 
     str operator->() { return as_str(); }
     const str operator->() const { return as_str(); }
+
+    bool operator==(const String& rhs) const;
+    bool operator!=(const String& rhs) const;
+
+    usize hash() const;
 };
 
-template<typename T>
-struct ToString {
-    static rstd::string::String to_string(const T& self) {
-        static_assert(false, "'ToString' is not implemented for this type");
-        return rstd::string::String::make();
-    }
-};
-
-#define impl_ToString_for_gen(T, b)        struct rstd::string::ToString<T> { static rstd::string::String to_string(const T& self) b };
-#define decl_ToString_for(T)    template<> struct rstd::string::ToString<T> { static rstd::string::String to_string(const T& self); };
-#define impl_ToString_for(T, b) rstd::string::String rstd::string::ToString<T>::to_string(const T& self) b
-#define impl_ToString_all(T, b) template<> impl_ToString_for_gen(T, b)
-
-template<typename ...Args> String format(std::string_view fmt, Args&& ...args) {
-    return rstd::string::String::from(std::vformat(fmt, std::make_format_args(args...)));
-}
-#define WRITE(s, fmt, ...)   s.push_str(format(fmt, __VA_ARGS__).as_str())
-#define WRITELN(s, fmt, ...) s.push_str(format(fmt, __VA_ARGS__).as_str()); s.push('\n')
-
-
-} }
+}}
 
 namespace std {
     template <> struct hash<rstd::string::String> {
@@ -102,11 +89,46 @@ namespace std {
             return std::hash<std::string>()(s.data());
         }
     };
+
+    template<> struct formatter<rstd::string::String> {
+        template<typename FmtContext>
+        FmtContext::iterator format(const rstd::string::String& s, FmtContext& ctx) const {
+            std::ostringstream out;
+            out << s.c_str();
+            return std::ranges::copy(std::move(out).str(), ctx.out()).out;
+        }
+    };
+
 }
+
+namespace rstd { namespace string {
+
+template<typename ...Args> String format(std::string_view fmt, Args&& ...args) {
+    return rstd::string::String::from(std::vformat(fmt, std::make_format_args(args...)));
+}
+#define WRITE(s, fmt, ...)   s.push_str(format(fmt, __VA_ARGS__).as_str())
+#define WRITELN(s, fmt, ...) s.push_str(format(fmt, __VA_ARGS__).as_str()); s.push('\n')
+
+template<typename T>
+String to_string(const T& val) {
+    return val.to_string();
+}
+template<> String to_string(const bool& val);
+template<> String to_string(const i8& val);
+template<> String to_string(const i16& val);
+template<> String to_string(const i32& val);
+template<> String to_string(const i64& val);
+template<> String to_string(const u8& val);
+template<> String to_string(const u16& val);
+template<> String to_string(const u32& val);
+template<> String to_string(const u64& val);
+template<> String to_string(const f32& val);
+template<> String to_string(const f64& val);
+
+} }
 
 using rstd::string::format;
 
-decl_PartialEq_for(rstd::string::String)
-decl_Debug_for(    rstd::string::String)
-decl_ToString_for( rstd::string::String)
+std::ostream& operator<<(std::ostream& stream, const rstd::string::String& val);
+
 

@@ -1,0 +1,8 @@
+{
+    "project": "rusty",
+    "cpp": "c++20",
+    "inc": [ "src/", "include/rusty" ],
+    "defines": [],
+    "deps": {}
+}
+

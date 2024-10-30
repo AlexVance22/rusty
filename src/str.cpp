@@ -68,17 +68,22 @@ String str::replacen(const str pat, const str to, usize n) const {
 }
 
 
-impl_PartialEq_for(str, {
-    if (self.len() != rhs.len()) {
+bool str::operator==(const str& rhs) const {
+    if (len() != rhs.len()) {
         return false;
     }
-    for (usize i = 0; i < self.len(); i++) {
-        if (self.nth(i) != rhs.nth(i)) {
+    for (usize i = 0; i < len(); i++) {
+        if (nth(i) != rhs.nth(i)) {
             return false;
         }
     }
     return true;
-})
-impl_Debug_for(    str, { f.write(self.data(), self.len()); })
-impl_ToString_for( str, { return rstd::string::String::from(self); })
+}
+bool str::operator!=(const str& rhs) const {
+    return !(*this == rhs);
+}
+
+std::ostream& operator<<(std::ostream& stream, const str& val) {
+    return stream.write(val.data(), val.len());
+}
 

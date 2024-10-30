@@ -183,20 +183,42 @@ String String::replacen(const str pat, const str to, usize n) const {
 }
 
 
-
-} }
-
-impl_PartialEq_for(rstd::string::String, {
-    if (self.len() != rhs.len()) {
+bool String::operator==(const String& rhs) const {
+    if (len() != rhs.len()) {
         return false;
     }
-    for (usize i = 0; i < self.len(); i++) {
-        if (self.nth(i) != rhs.nth(i)) {
+    for (usize i = 0; i < len(); i++) {
+        if (nth(i) != rhs.nth(i)) {
             return false;
         }
     }
     return true;
-})
-impl_Debug_for(    rstd::string::String, { f.write(self.data(), self.len()); })
-impl_ToString_for( rstd::string::String, { return self.clone(); })
+}
+bool String::operator!=(const String& rhs) const {
+    return !(*this == rhs);
+}
+
+usize String::hash() const {
+    return std::hash<std::string>()(data());
+}
+
+
+template<> String to_string(const bool& val){ return String::from(val ? "true" : "false"); }
+template<> String to_string(const i8& val)  { return String::from(std::to_string((int8_t)val)); }
+template<> String to_string(const i16& val) { return String::from(std::to_string((int16_t)val)); }
+template<> String to_string(const i32& val) { return String::from(std::to_string((int32_t)val)); }
+template<> String to_string(const i64& val) { return String::from(std::to_string((int64_t)val)); }
+template<> String to_string(const u8& val)  { return String::from(std::to_string((uint8_t)val)); }
+template<> String to_string(const u16& val) { return String::from(std::to_string((uint16_t)val)); }
+template<> String to_string(const u32& val) { return String::from(std::to_string((uint32_t)val)); }
+template<> String to_string(const u64& val) { return String::from(std::to_string((uint64_t)val)); }
+template<> String to_string(const f32& val) { return String::from(std::to_string((float)val)); }
+template<> String to_string(const f64& val) { return String::from(std::to_string((double)val)); }
+
+} }
+
+
+std::ostream& operator<<(std::ostream& stream, const rstd::string::String& val) {
+    return stream.write(val.data(), val.len());
+}
 

@@ -1,8 +1,8 @@
 #pragma once
 #include <cstdio>
-
 #include "num.h"
 #include "str.h"
+
 struct Unit {};
 
 #define panic(...) printf(__VA_ARGS__); exit(1)

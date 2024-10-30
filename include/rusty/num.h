@@ -2,8 +2,6 @@
 #include <iostream>
 #include <cstdint>
 #include <cmath>
-#include "fmt_fwd.h"
-#include "ops.h"
 
 #define C_EXPR inline static constexpr
 #define STATIC inline static const
@@ -54,54 +52,64 @@ private:
 public:
     constexpr Int() = default;
     constexpr Int(T other): m_val(other) {}
-    // constexpr Int(const Int<T>& other): m_val(other.m_val) {}
+    constexpr Int(const Int& other): m_val(other.m_val) {}
+    template<typename U>
+    constexpr explicit Int(const Int<U>& other): m_val((T)other) {}
+    template<typename U>
+    constexpr explicit Int(const Float<U>& other): m_val((T)other) {}
+    constexpr Int(Int&& other): m_val(other.m_val) {}
 
     constexpr Int& operator=(const T& other) { m_val = other; return *this; }
-    // constexpr Int& operator=(const Int<T>& other) { m_val = other.m_val; return *this; }
+    constexpr Int& operator=(const Int& other) { m_val = other.m_val; return *this; }
+    template<typename U>
+    constexpr Int& operator=(const Int<U>& other) { m_val = (T)other.m_val; return *this; }
+    template<typename U>
+    constexpr Int& operator=(const Float<U>& other) { m_val = (T)other; return *this; }
+    constexpr Int& operator=(Int&& other) { m_val = other.m_val; return *this; }
 
-    constexpr Int operator+=(const Int<T>& other) { m_val += other.m_val; return *this; }
-    constexpr Int operator-=(const Int<T>& other) { m_val -= other.m_val; return *this; }
-    constexpr Int operator*=(const Int<T>& other) { m_val *= other.m_val; return *this; }
-    constexpr Int operator/=(const Int<T>& other) { m_val /= other.m_val; return *this; }
-    constexpr Int operator%=(const Int<T>& other) { m_val %= other.m_val; return *this; }
+    constexpr Int operator+=(const Int& other) { m_val += other.m_val; return *this; }
+    constexpr Int operator-=(const Int& other) { m_val -= other.m_val; return *this; }
+    constexpr Int operator*=(const Int& other) { m_val *= other.m_val; return *this; }
+    constexpr Int operator/=(const Int& other) { m_val /= other.m_val; return *this; }
+    constexpr Int operator%=(const Int& other) { m_val %= other.m_val; return *this; }
 
     template<typename U> constexpr Int operator>>=(const Int<U>& right) { return m_val >> (U)right.m_val; }
     template<typename U> constexpr Int operator<<=(const Int<U>& right) { return m_val << (U)right.m_val; }
 
     constexpr Int& operator++() { m_val++; return *this; }
-    constexpr Int operator++(int) { T temp = m_val; m_val++; return temp; }
+    constexpr Int operator++(int) { T temp = m_val; m_val++; return Int(temp); }
     constexpr Int& operator--() { m_val--; return *this; }
-    constexpr Int operator--(int) { T temp = m_val; m_val--; return temp; }
+    constexpr Int operator--(int) { T temp = m_val; m_val--; return Int(temp); }
 
-    constexpr Int operator&=(const Int<T>& other) { m_val &= other.m_val; return *this; }
-    constexpr Int operator|=(const Int<T>& other) { m_val |= other.m_val; return *this; }
-    constexpr Int operator^=(const Int<T>& other) { m_val ^= other.m_val; return *this; }
+    constexpr Int operator&=(const Int& other) { m_val &= other.m_val; return *this; }
+    constexpr Int operator|=(const Int& other) { m_val |= other.m_val; return *this; }
+    constexpr Int operator^=(const Int& other) { m_val ^= other.m_val; return *this; }
 
     constexpr Int clone() const { return m_val; }
     constexpr Int move()  const { return m_val; }
 
-    constexpr Int add(const Int<T>& other) { return m_val + other.m_val; }
-    constexpr Int sub(const Int<T>& other) { return m_val - other.m_val; }
-    constexpr Int mul(const Int<T>& other) { return m_val * other.m_val; }
-    constexpr Int div(const Int<T>& other) { return m_val / other.m_val; }
-    constexpr Int rem(const Int<T>& other) { return m_val % other.m_val; }
-    constexpr Int<T>::Signed neg() { return -m_val; }
+    constexpr Int add(const Int& other) { return m_val + other.m_val; }
+    constexpr Int sub(const Int& other) { return m_val - other.m_val; }
+    constexpr Int mul(const Int& other) { return m_val * other.m_val; }
+    constexpr Int div(const Int& other) { return m_val / other.m_val; }
+    constexpr Int rem(const Int& other) { return m_val % other.m_val; }
+    constexpr Int::Signed neg() { return -m_val; }
 
     constexpr Int abs() const { return m_val < 0 ? -m_val : m_val; }
-    constexpr Int abs_diff(const Int<T>& other) const { return Int(m_val - other.m_val).abs(); }
+    constexpr Int abs_diff(const Int& other) const { return Int(m_val - other.m_val).abs(); }
     constexpr u32 ilog(const Int<T>& base) const { return (u32)(std::log(m_val) / std::log(base.m_val)); }
     constexpr u32 ilogn() const { return std::log(m_val); }
-    constexpr u32 ilog2() const { u32 res = 0; T temp = m_val; while (temp >>= 1) res++; return res; }
+    constexpr u32 ilog2() const { u32 res = 0; T temp = m_val; while (temp >>= 1) res++; return u32(res); }
     constexpr u32 ilog10() const { return (u32)std::log10(m_val); }
-    constexpr Int pow(u32 exp) const { T val = 1; for (; exp != 0; exp--) val *= (T)m_val; return val; }
-    constexpr Int<T>::Signed signum() const { return (0 < m_val) - (m_val < 0); }
+    constexpr Int pow(u32 exp) const { T val = 1; for (; exp != (u32)0; exp--) val *= (T)m_val; return Int(val); }
+    constexpr Int::Signed signum() const { return (0 < m_val) - (m_val < 0); }
 
     constexpr bool is_negative() const { return m_val < 0; }
     constexpr bool is_positive() const { return m_val > 0; }
 
     operator T() const { return m_val; }
-    template<typename U> explicit operator Int<U>() const { return Int<U>((U)m_val); }
-    template<typename U> explicit operator Float<U>() const { return Float<U>((U)m_val); }
+    template<typename U> explicit operator Int<U>() { return Int<U>((U)m_val); }
+    template<typename U> explicit operator Float<U>() { return Float<U>((U)m_val); }
 
     template<typename U> friend constexpr Int<U> operator+(const Int<U>& left, const Int<U>& right);
     template<typename U> friend constexpr Int<U> operator-(const Int<U>& left, const Int<U>& right);
@@ -118,14 +126,11 @@ public:
     template<typename U, typename V> friend constexpr Int<U> operator>>(const Int<U>& left, const Int<V>& right);
     template<typename U, typename V> friend constexpr Int<U> operator<<(const Int<U>& left, const Int<V>& right);
 
+    template<typename U> friend constexpr auto operator<=>(const Int<U>& left, const Int<U>& right);
     template<typename U> friend constexpr bool operator==(const Int<U>& left, const Int<U>& right);
-    template<typename U> friend constexpr bool operator!=(const Int<U>& left, const Int<U>& right);
-    template<typename U> friend constexpr bool operator< (const Int<U>& left, const Int<U>& right);
-    template<typename U> friend constexpr bool operator> (const Int<U>& left, const Int<U>& right);
-    template<typename U> friend constexpr bool operator<=(const Int<U>& left, const Int<U>& right);
-    template<typename U> friend constexpr bool operator>=(const Int<U>& left, const Int<U>& right);
 
     template<typename U> friend std::istream& operator>>(std::istream& stream, Int<U> val);
+    template<typename U> friend std::ostream& operator<<(std::ostream& stream, Int<U> val);
 };
 
 
@@ -144,41 +149,21 @@ template<typename T> constexpr Int<T> operator~(const Int<T>& right) { return ~r
 template<typename T, typename U>constexpr Int<T> operator>>(const Int<T>& left, const Int<U>& right) { return left.m_val >> (U)right.m_val; }
 template<typename T, typename U>constexpr Int<T> operator<<(const Int<T>& left, const Int<U>& right) { return left.m_val << (U)right.m_val; }
 
-template<typename T> constexpr bool operator==(const Int<T>& left, const Int<T>& right) { return left.m_val == right.m_val; }
-template<typename T> constexpr bool operator!=(const Int<T>& left, const Int<T>& right) { return left.m_val != right.m_val; }
-template<typename T> constexpr bool operator< (const Int<T>& left, const Int<T>& right) { return left.m_val <  right.m_val; }
-template<typename T> constexpr bool operator> (const Int<T>& left, const Int<T>& right) { return left.m_val >  right.m_val; }
-template<typename T> constexpr bool operator<=(const Int<T>& left, const Int<T>& right) { return left.m_val <= right.m_val; }
-template<typename T> constexpr bool operator>=(const Int<T>& left, const Int<T>& right) { return left.m_val >= right.m_val; }
+template<typename T> constexpr auto operator<=>(const Int<T>& left, const Int<T>& right) { return left.m_val <=> right.m_val; }
+template<typename T> constexpr bool operator== (const Int<T>& left, const Int<T>& right) { return left.m_val == right.m_val; }
 
 template<typename T> std::istream& operator>>(std::istream& stream, Int<T> val) { return stream >> val.m_val; }
-decl_Debug_for(i8)
-decl_Debug_for(i16)
-decl_Debug_for(i32)
-decl_Debug_for(i64)
-decl_Debug_for(u8)
-decl_Debug_for(u16)
-decl_Debug_for(u32)
-decl_Debug_for(u64)
+template<typename T> std::ostream& operator<<(std::ostream& stream, Int<T> val) { return stream << val.m_val; }
 
-decl_ToString_for( i8)
-decl_ToString_for( i16)
-decl_ToString_for( i32)
-decl_ToString_for( i64)
-decl_ToString_for( u8)
-decl_ToString_for( u16)
-decl_ToString_for( u32)
-decl_ToString_for( u64)
-
-i8  operator ""_i8 (unsigned long long int);
-i16 operator ""_i16(unsigned long long int);
-i32 operator ""_i32(unsigned long long int);
-i64 operator ""_i64(unsigned long long int);
+i8    operator ""_i8 (unsigned long long int);
+i16   operator ""_i16(unsigned long long int);
+i32   operator ""_i32(unsigned long long int);
+i64   operator ""_i64(unsigned long long int);
 isize operator ""_isize(unsigned long long int);
-u8  operator ""_u8 (unsigned long long int);
-u16 operator ""_u16(unsigned long long int);
-u32 operator ""_u32(unsigned long long int);
-u64 operator ""_u64(unsigned long long int);
+u8    operator ""_u8 (unsigned long long int);
+u16   operator ""_u16(unsigned long long int);
+u32   operator ""_u32(unsigned long long int);
+u64   operator ""_u64(unsigned long long int);
 usize operator ""_usize(unsigned long long int);
 
 
@@ -239,7 +224,7 @@ class Float
 public:
     C_EXPR uint32_t DIGITS             = FloatTraits<T>::DIGITS;
     C_EXPR T        EPSILON            = FloatTraits<T>::EPSILON;
-    STATIC T INFINITY     = FloatTraits<T>::INFINITY;
+    STATIC T        INFINITY           = FloatTraits<T>::INFINITY;
     C_EXPR uint32_t MANTISSA_DIGITS    = FloatTraits<T>::MANTISSA_DIGITS;
     C_EXPR T        MAX                = FloatTraits<T>::MAX;
     C_EXPR int32_t  MAX_10_EXP         = FloatTraits<T>::MAX_10_EXP;
@@ -248,8 +233,8 @@ public:
     C_EXPR int32_t  MIN_10_EXP         = FloatTraits<T>::MIN_10_EXP;
     C_EXPR int32_t  MIN_EXP            = FloatTraits<T>::MIN_EXP;
     C_EXPR T        MIN_POSITIVE       = FloatTraits<T>::MIN_POSITIVE;
-    STATIC T NAN          = FloatTraits<T>::NAN;
-    STATIC T NEG_INFINITY = FloatTraits<T>::NEG_INFINITY;
+    STATIC T        NAN                = FloatTraits<T>::NAN;
+    STATIC T        NEG_INFINITY       = FloatTraits<T>::NEG_INFINITY;
     C_EXPR uint32_t RADIX              = FloatTraits<T>::RADIX;
     using inner_t = T;
 
@@ -259,23 +244,33 @@ private:
 public:
     constexpr Float() = default;
     constexpr Float(const T& other): m_val(other) {}
-    // constexpr Float(const Float<T>& other): m_val(other.m_val) {}
+    constexpr Float(const Float& other): m_val(other.m_val) {}
+    template<typename U>
+    constexpr explicit Float(const Float<U>& other): m_val(other.m_val) {}
+    template<typename U>
+    constexpr explicit Float(const Int<U>& other): m_val((T)other) {}
+    constexpr Float(Float&& other): m_val(other.m_val) {}
 
     constexpr Float& operator=(const T& other) { m_val = other; return *this; }
-    // constexpr Float& operator=(const Float<T>& other) { m_val = other.m_val; return *this; }
+    constexpr Float& operator=(const Float& other) { m_val = other.m_val; return *this; }
+    template<typename U>
+    constexpr Float& operator=(const Float<U>& other) { m_val = (T)other.m_val; return *this; }
+    template<typename U>
+    constexpr Float& operator=(const Int<U>& other) { m_val = (T)other; return *this; }
+    constexpr Float& operator=(Float&& other) { m_val = other.m_val; return *this; }
 
-    constexpr Float operator+=(const Float<T>& other) { m_val += other.m_val; return *this; }
-    constexpr Float operator-=(const Float<T>& other) { m_val -= other.m_val; return *this; }
-    constexpr Float operator*=(const Float<T>& other) { m_val *= other.m_val; return *this; }
-    constexpr Float operator/=(const Float<T>& other) { m_val /= other.m_val; return *this; }
+    constexpr Float operator+=(const Float& other) { m_val += other.m_val; return *this; }
+    constexpr Float operator-=(const Float& other) { m_val -= other.m_val; return *this; }
+    constexpr Float operator*=(const Float& other) { m_val *= other.m_val; return *this; }
+    constexpr Float operator/=(const Float& other) { m_val /= other.m_val; return *this; }
 
     constexpr Float clone() const { return m_val; }
     constexpr Float move()  const { return m_val; }
 
-    constexpr Float add(const Float<T>& other) { return m_val + other.m_val; }
-    constexpr Float sub(const Float<T>& other) { return m_val - other.m_val; }
-    constexpr Float mul(const Float<T>& other) { return m_val * other.m_val; }
-    constexpr Float div(const Float<T>& other) { return m_val / other.m_val; }
+    constexpr Float add(const Float& other) { return m_val + other.m_val; }
+    constexpr Float sub(const Float& other) { return m_val - other.m_val; }
+    constexpr Float mul(const Float& other) { return m_val * other.m_val; }
+    constexpr Float div(const Float& other) { return m_val / other.m_val; }
     constexpr Float neg() { return -m_val; }
 
     constexpr Float abs() const { return m_val < (T)0 ? -m_val : m_val; }
@@ -315,14 +310,11 @@ public:
     template<typename U> friend constexpr Float<U> operator/(const Float<U>& left, const Float<U>& right);
     template<typename U> friend constexpr Float<U> operator-(const Float<U>& right);
 
+    template<typename U> friend constexpr auto operator<=>(const Float<U>& left, const Float<U>& right);
     template<typename U> friend constexpr bool operator==(const Float<U>& left, const Float<U>& right);
-    template<typename U> friend constexpr bool operator!=(const Float<U>& left, const Float<U>& right);
-    template<typename U> friend constexpr bool operator< (const Float<U>& left, const Float<U>& right);
-    template<typename U> friend constexpr bool operator> (const Float<U>& left, const Float<U>& right);
-    template<typename U> friend constexpr bool operator<=(const Float<U>& left, const Float<U>& right);
-    template<typename U> friend constexpr bool operator>=(const Float<U>& left, const Float<U>& right);
 
     template<typename U> friend std::istream& operator>>(std::istream& stream, Float<U> val);
+    template<typename U> friend std::ostream& operator<<(std::ostream& stream, Float<U> val);
 };
 
 
@@ -332,19 +324,11 @@ template<typename T> constexpr Float<T> operator*(const Float<T>& left, const Fl
 template<typename T> constexpr Float<T> operator/(const Float<T>& left, const Float<T>& right) { return left.m_val / right.m_val; }
 template<typename T> constexpr Float<T> operator-(const Float<T>& right) { return -right.m_val; }
 
-template<typename T> constexpr bool operator==(const Float<T>& left, const Float<T>& right) { return left.m_val == right.m_val; }
-template<typename T> constexpr bool operator!=(const Float<T>& left, const Float<T>& right) { return left.m_val != right.m_val; }
-template<typename T> constexpr bool operator< (const Float<T>& left, const Float<T>& right) { return left.m_val <  right.m_val; }
-template<typename T> constexpr bool operator> (const Float<T>& left, const Float<T>& right) { return left.m_val >  right.m_val; }
-template<typename T> constexpr bool operator<=(const Float<T>& left, const Float<T>& right) { return left.m_val <= right.m_val; }
-template<typename T> constexpr bool operator>=(const Float<T>& left, const Float<T>& right) { return left.m_val >= right.m_val; }
+template<typename T> constexpr auto operator<=>(const Float<T>& left, const Float<T>& right) { return left.m_val <=> right.m_val; }
+template<typename T> constexpr bool operator== (const Float<T>& left, const Float<T>& right) { return left.m_val == right.m_val; }
 
 template<typename T> std::istream& operator>>(std::istream& stream, Float<T> val) { return stream >> val.m_val; }
-decl_Debug_for(f32)
-decl_Debug_for(f64)
-
-decl_ToString_for( f32)
-decl_ToString_for( f64)
+template<typename T> std::ostream& operator<<(std::ostream& stream, Float<T> val) { return stream << val.m_val; }
 
 f32 operator ""_f32(long double);
 f64 operator ""_f64(long double);
